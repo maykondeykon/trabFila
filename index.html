@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Caixas Eletrônicos</title>
+        <meta name="author" content="Maykon Deykon, Milena,Jamesson,Fabio">
+        <script type="text/javascript" src="classes/Caixa.js"></script>
+        <script type="text/javascript" src="classes/Fila.js"></script>
+        <script type="text/javascript" src="classes/Cliente.js"></script>
+        <script type="text/javascript" src="classes/Transacao.js"></script>
+
+        <script>
+
+            var tempoCaixa = {'caixa1': 0, 'caixa2': 0, 'caixa3': 0};
+            var relogio = setInterval(function() {
+                Relogio();
+            }, 1000);
+
+            function Relogio()
+            {
+                var d = new Date();
+                var t = d.toLocaleTimeString();
+                document.getElementById("relogio").innerHTML = t;
+
+                var i;
+                for (i = 1; i < 4; i++) {
+                    if (tempoCaixa['caixa' + i] > 0) {
+                        tempoCaixa['caixa' + i]--;
+                        document.getElementById("tempoCaixa" + i).innerHTML = "(" + tempoCaixa['caixa' + i] + ")";
+                    }
+                }
+
+            }
+
+
+            var caixa1 = new Caixa();
+            var caixa2 = new Caixa();
+            var caixa3 = new Caixa();
+            var fila = new Fila();
+            var transacao = new Transacao();
+            var i = 1;
+
+            var c = setInterval(function() {
+                var cliente = criaCliente(Math.floor((Math.random() * 2) + 1));  //cria randomicamente clientes
+                if (cliente !== 0) {
+                    fila.incluiClienteNaFila(cliente);
+                }
+            }, 3000);
+
+
+            var operacao = setInterval(function() {
+                if (!fila.isVazia()) {
+                    operacaoFila(fila);//inicia as operações da fila, caso a mesma não esteja vazia
+                }
+
+            }, 1000);
+
+            function criaCliente(cria) {
+                if (cria === 1) {
+                    var t = transacao.getTransacao(); //gera uma transação aleatória
+                    var cliente = new Cliente(i, t); //cria um cliente novo
+                    i++;
+                    return cliente;
+                } else {
+                    return 0;
+                }
+            }
+
+
+
+            function operacaoCaixa(caixa) {
+
+                var cliente = fila.retiraClienteDaFila(); //cliente sai da fila
+                caixa.recebeCliente(cliente); //cliente entra no caixa desocupado
+                tempoCaixa[caixa.getNome()] = cliente.getTransacao()['tempo'];
+                caixa.setTempoOcupado(cliente.getTransacao()['tempo']);
+
+                document.getElementById("tempoTotal" + caixa.getNome() + "").innerHTML = "(" + caixa.getTempoOcupado() + ")";
+                document.getElementById("totalClientes" + caixa.getNome() + "").innerHTML = "(" + caixa.getTotalClientes() + ")";
+                document.getElementById("media" + caixa.getNome() + "").innerHTML = "(" + caixa.mediaPorCliente() + ")";
+                document.getElementById("tempoFila" + caixa.getNome() + "").innerHTML = "(" + cliente.getTempoNaFila() + ")";
+            }
+
+            function operacaoFila(fila) {
+                if (caixa1.isLivre()) {
+                    operacaoCaixa(caixa1);
+                }
+
+                if (tempoCaixa['caixa1'] === 0) {
+                    caixa1.retiraCliente();
+                }
+
+                if (caixa2.isLivre()) {
+                    operacaoCaixa(caixa2);
+                }
+
+                if (tempoCaixa['caixa2'] === 0) {
+                    caixa2.retiraCliente();
+                }
+
+                if (caixa3.isLivre()) {
+                    operacaoCaixa(caixa3);
+                }
+
+                if (tempoCaixa['caixa3'] === 0) {
+                    caixa3.retiraCliente();
+                }
+
+
+            }
+
+
+            //insere graficamente o cliente na fila
+            function insereNaLista(cliente, lista) {
+                var node = document.createElement("LI");
+                var textNode = document.createTextNode(cliente);
+                node.appendChild(textNode);
+                document.getElementById("" + lista + "").appendChild(node);
+            }
+
+            //move graficamente o cliente da fila para o caixa
+            function moveItemDeLista(lista1, lista2) {
+                var p = document.getElementById("" + lista1 + "").firstChild;
+                document.getElementById("" + lista1 + "").removeChild(p);
+                document.getElementById("" + lista2 + "").appendChild(p);
+            }
+
+            //remove graficamente o cliente do caixa
+            function removeDoCaixa(caixa) {
+                var c = document.getElementById("" + caixa + "").firstChild;
+                document.getElementById("" + caixa + "").removeChild(c);
+            }
+
+        </script>
+        <style>
+            td{
+                width: 218px;
+            }
+            #relogio, #obs{
+                float: right;
+                display: block;
+            }
+            .caixa{
+                list-style: none;
+            }
+            .clienteCaixa{
+                list-style-type: circle;
+                background-color: aliceblue;
+            }
+            th{
+                color: gray;
+                background-color: whitesmoke;
+            }
+
+        </style>
+        
+    </head>
+
+    <body>
+
+        <table>
+            <tr>
+                <th colspan="3">Banco <span id="relogio"></span></th>
+            </tr>
+            <tr>
+                <th>Caixa 1:</th>
+                <th>Caixa 2:</th>
+                <th>Caixa 3:</th>
+            </tr>
+            <tr>
+                <td>
+                    <ul class="caixa">
+                        <li>Uso do caixa: <span id="tempoCaixa1"></span></li>
+                        <li>Tempo na fila: <span id="tempoFilacaixa1"></span></li>
+                        <li>Uso total do caixa: <span id="tempoTotalcaixa1"></span></li>
+                        <li>Total de clientes: <span id="totalClientescaixa1"></span></li>
+                        <li>Média: <span id="mediacaixa1"></span></li>
+                    </ul>
+
+                </td>
+                <td>
+                    <ul class="caixa">
+                        <li>Uso do caixa: <span id="tempoCaixa2"></span></li>
+                        <li>Tempo na fila: <span id="tempoFilacaixa2"></span></li>
+                        <li>Uso total do caixa: <span id="tempoTotalcaixa2"></span></li>
+                        <li>Total de clientes: <span id="totalClientescaixa2"></span></li>
+                        <li>Média: <span id="mediacaixa2"></span></li>
+                    </ul>
+
+                </td>
+                <td>
+                    <ul class="caixa">
+                        <li>Uso do caixa: <span id="tempoCaixa3"></span></li>
+                        <li>Tempo na fila: <span id="tempoFilacaixa3"></span></li>
+                        <li>Uso total do caixa: <span id="tempoTotalcaixa3"></span></li>
+                        <li>Total de clientes: <span id="totalClientescaixa3"></span></li>
+                        <li>Média: <span id="mediacaixa3"></span></li>
+                    </ul>
+
+                </td>
+            </tr>
+            <tr>
+                <td>
+
+                    <ul id="caixa1" class="clienteCaixa"></ul>
+                </td>
+                <td>
+                    <ul id="caixa2" class="clienteCaixa"></ul>
+                </td>
+                <td>
+                    <ul id="caixa3" class="clienteCaixa"></ul>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="3" id="divisoria"></td>
+            </tr>
+            <tr>
+                <td></td>
+                <th>Fila:</th>
+            </tr>
+
+            <tr>
+                <td></td>
+                <td>
+                    <ol id="fila"></ol> 
+                </td>
+            </tr>
+            <tr>
+                <th colspan="3"><span id="obs">*Tempos em segundos</span></th>
+            </tr>
+
+        </table>
+
+
+
+    </body>
+</html>
